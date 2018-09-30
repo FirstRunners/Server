@@ -35,7 +35,7 @@ router.post('/',(req, res)=>{
             message : "500 error"
           });
           connection.release();
-          callback("sign in error : " + err);
+          callback("post id err : " + err);
         } else{
           callback(null, data, connection);
         }
@@ -53,14 +53,19 @@ router.post('/',(req, res)=>{
               message : "500 error"
             });
             connection.release();
-            callback("sign up error : " + err);
+            callback("sign up err : " + err);
           } else{
             callback(null,connection);
           }
         });
-      }else{ // 이미 회원가입 된 회원일 시 => 토큰 새로 발급
-        callback(null,connection);
+      }else{ // 이미 회원가입 된 회원일 시 => 로그인 해야함
+          res.status(201).send({
+            status : false,
+            message : "there is a existing user"
+          });
+          connection.release();
       }
+
     },
     (connection, callback) => {
       let selectUserQuery =

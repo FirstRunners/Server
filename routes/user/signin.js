@@ -48,8 +48,8 @@ router.post('/',(req, res)=>{
             status : false,
             message : "there is no user"
           });
-          connection.release();
-          callback("sign in error : " + err);
+          // connection.release();
+          // callback("sign in error : " + err);
       }else{ // 이미 회원가입 된 회원일 시 => 토큰 새로 발급
         var userInfo = {};
 
