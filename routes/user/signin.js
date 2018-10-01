@@ -53,7 +53,7 @@ router.post('/',(req, res)=>{
       }else{ // 이미 회원가입 된 회원일 시 => 토큰 새로 발급
         var userInfo = {};
 
-        token = jwt.sign(data[0].user_id, data[0].user_email, data[0].user_phone);
+        token = jwt.sign(data[0].user_id, data[0].user_name, data[0].user_email, data[0].user_phone);
         userInfo.user_token = token;
         res.status(201).send({
           status : true,
