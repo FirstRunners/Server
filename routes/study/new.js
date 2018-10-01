@@ -7,14 +7,19 @@ const jwt = require('../../module/jwt.js');
 // 스터디 생성
 router.post('/',(req, res)=>{
 
-  let study_users = [];
+  let temp = [];
+  var study_users = temp;
   var name = req.body.study_name;
   var goal = req.body.study_goal;
   var inwon = req.body.study_inwon;
   var start = req.body.study_start;
   var end = req.body.study_end;
   var count = req.body.study_count;
-  var period ;
+
+  var startDate = new Date(start);
+  var endDate = new Date(end);
+
+  var period = (endDate.getTime() - startDate.getTime()) / (1000*60*60*24);
 
   let taskArray = [
     (callback) => {
@@ -43,7 +48,8 @@ router.post('/',(req, res)=>{
     },
     (verify_data, connection, callback) => {
 
-      study_users.push(verify_data.user_id); // 스터디 인원 배열에 스터디 생성 한 사람 넣기
+      temp.push(verify_data.user_id); // 스터디 인원 배열에 스터디 생성 한 사람 넣기
+      study_users = JSON.stringify(temp);
 
       let newStudyQuery =
       `

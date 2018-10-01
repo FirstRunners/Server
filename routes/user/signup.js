@@ -46,6 +46,7 @@ router.post('/',(req, res)=>{
       `insert into user values(?,?,?,?,?,?,?,?,?,?,?)`;
       // 데이터가 없을 시 (새로 가입하는 회원일 시) => DB에 insert 후 토큰 발급
       if(data.length == 0){
+        // DB에 insert
         connection.query(signupQuery, [null,req.body.user_name,req.body.user_email,req.body.user_phone,null,null,1,0,0,null,1],(err, data2) => {
           if(err){
             res.status(500).send({
@@ -73,6 +74,7 @@ router.post('/',(req, res)=>{
        FROM user
        WHERE user_name = ? and user_email = ? and user_phone = ?
        `;
+       // user_id 까지 찾아서 토큰 발급
       connection.query(selectUserQuery, [req.body.user_name,req.body.user_email,req.body.user_phone], (err, data3) => {
         if(err){
           res.status(500).send({
@@ -92,7 +94,7 @@ router.post('/',(req, res)=>{
           }else{
             var userInfo = {};
 
-            token = jwt.sign(data3[0].user_id, data3[0].user_email, data3[0].user_phone);
+            token = jwt.sign(data3[0].user_id, data3[0].user_name, data3[0].user_email, data3[0].user_phone);
             userInfo.user_token = token;
             res.status(201).send({
               status : true,
