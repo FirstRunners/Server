@@ -55,6 +55,10 @@ router.post('/',(req, res)=>{
 
         token = jwt.sign(data[0].user_id, data[0].user_name, data[0].user_email, data[0].user_phone);
         userInfo.user_token = token;
+
+        if(data[0].user_study_id == null) userInfo.study_id = null;
+        else userInfo.study_id = data[0].user_study_id;
+
         res.status(201).send({
           status : true,
           message : "successful sign in",

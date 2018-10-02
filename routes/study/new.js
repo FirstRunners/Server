@@ -7,8 +7,10 @@ const jwt = require('../../module/jwt.js');
 // 스터디 생성
 router.post('/',(req, res)=>{
 
-  let temp = [];
-  var study_users = temp;
+  let temp_users = [];
+  let temp_hws = [];
+  var study_hws = temp_hws;
+  var study_users = temp_users;
   var name = req.body.study_name;
   var goal = req.body.study_goal;
   var inwon = req.body.study_inwon;
@@ -48,8 +50,9 @@ router.post('/',(req, res)=>{
     },
     (verify_data, connection, callback) => {
 
-      temp.push(verify_data.user_id); // 스터디 인원 배열에 스터디 생성 한 사람 넣기
-      study_users = JSON.stringify(temp);
+      temp_users.push(verify_data.user_id); // 스터디 인원 배열에 스터디 생성 한 사람 넣기
+      study_users = JSON.stringify(temp_users);
+      study_hws = JSON.stringify(temp_hws);
 
       let newStudyQuery =
       `
@@ -57,7 +60,7 @@ router.post('/',(req, res)=>{
       `;
 
       // 스터디 insert
-      connection.query(newStudyQuery, [null,name,goal,inwon,start,end,period,count,study_users,null], (err, data) => {
+      connection.query(newStudyQuery, [null,name,goal,inwon,start,end,period,count,study_users,study_hws], (err, data) => {
         if(err){
           res.status(500).send({
             status : false,
