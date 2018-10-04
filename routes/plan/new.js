@@ -11,8 +11,7 @@ router.post('/:study_id',(req, res)=>{
   var name = req.body.plan_name;
   var time = req.body.plan_time;
   var place = req.body.plan_place;
-  var start = req.body.plan_start;
-  var end = req.body.plan_end;
+  var date = req.body.plan_date;
   var memo = req.body.plan_memo;
 
   let taskArray = [
@@ -21,7 +20,7 @@ router.post('/:study_id',(req, res)=>{
         if(err){
           res.status(500).send({
             status : false,
-            message : "500 Error"
+            message : "500 error"
           });
           callback("DB connection err : " + err);
         } else{
@@ -33,11 +32,11 @@ router.post('/:study_id',(req, res)=>{
 
       let newPlanQuery =
       `
-      INSERT INTO plan values(?,?,?,?,?,?,?,?)
+      INSERT INTO plan values(?,?,?,?,?,?,?)
       `;
 
       // plan insert
-      connection.query(newPlanQuery, [null,id,name,start,end,time,place,memo], (err, data) => {
+      connection.query(newPlanQuery, [null,id,name,date,time,place,memo], (err, data) => {
         if(err){
           res.status(500).send({
             status : false,

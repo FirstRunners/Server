@@ -27,7 +27,7 @@ router.post('/',(req, res)=>{
     (callback) => {
       const verify_data = jwt.verify(req.headers.user_token);
       if (verify_data == undefined) {
-          res.status(400).send({
+          res.status(200).send({
             status: false,
             message: "invalid authentication"
           });
@@ -40,7 +40,7 @@ router.post('/',(req, res)=>{
         if(err){
           res.status(500).send({
             status : false,
-            message : "500 Error"
+            message : "500 error"
           });
           callback("DB connection err : " + err);
         } else{
