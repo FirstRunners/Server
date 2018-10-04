@@ -15,7 +15,7 @@ router.post('/',(req, res)=>{
         if(err){
           res.status(500).send({
             status : false,
-            message : "500 Error"
+            message : "500 error"
           });
           callback("DB connection err : " + err);
         } else callback(null, connection);
@@ -44,11 +44,11 @@ router.post('/',(req, res)=>{
     (data, connection, callback) => {
       // 데이터가 없을 시
       if(data.length == 0){
-          res.status(400).send({
+          res.status(200).send({
             status : false,
             message : "there is no user"
           });
-          // connection.release();
+          connection.release();
           // callback("sign in error : " + err);
       }else{ // 이미 회원가입 된 회원일 시 => 토큰 새로 발급
         var userInfo = {};
@@ -59,7 +59,7 @@ router.post('/',(req, res)=>{
         if(data[0].user_study_id == null) userInfo.study_id = null;
         else userInfo.study_id = data[0].user_study_id;
 
-        res.status(201).send({
+        res.status(200).send({
           status : true,
           message : "successful sign in",
           result : userInfo

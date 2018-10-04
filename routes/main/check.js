@@ -13,12 +13,13 @@ router.post('/:study_id',(req, res)=>{
   var study_id = req.params.study_id;
   var date = new Date();
   var today = date.toISOString().split('T')[0];
+  var check_flag; // 이미 출석체크를 했으면 true
 
   let taskArray = [
     (callback) => {
       const verify_data = jwt.verify(req.headers.user_token);
       if (verify_data == undefined) {
-          res.status(400).send({
+          res.status(200).send({
             status: false,
             message: "invalid authentication"
           });
@@ -32,7 +33,7 @@ router.post('/:study_id',(req, res)=>{
         if(err){
           res.status(500).send({
             status : false,
-            message : "500 Error"
+            message : "500 error"
           });
           callback("DB connection err : " + err);
         } else{
@@ -40,65 +41,40 @@ router.post('/:study_id',(req, res)=>{
         }
       });
     },
-    (verify_data, connection, callback) => {
+    // (verify_data, connection, callback) => {
+    //
+    //   let planIDQuery =
+    //   `
+    //   SELECT plan.plan_id
+    //   FROM plan, study
+    //   WHERE plan.plan_study_id = study.study_id and study.study_id = ? and plan.plan_date = ?
+    //   `;
+    //
+    //   // 오늘 날짜에 맞는 plan의 id 가져오기
+    //   connection.query(planIDQuery, [study_id,today], (err, plan_data) => {
+    //     if(err){
+    //       res.status(500).send({
+    //         status : false,
+    //         message : "500 error"
+    //       });
+    //       connection.release();
+    //       callback("make new study fail : " + err);
+    //     } else{
+    //       callback(null,plan_data,verify_data,connection);
+    //     }
+    //   });
+    // },
 
+    (verify_data, connection, callback) => {
       let attCheckQuery =
       `
       SELECT *
       FROM attendance
-      WHERE att_user_id = ? and att_check_date = ?
+      WHERE att_user_id = ? and att_study_id = ? and att_check_date = ?
       `;
 
-      // 출석 유무 체크
-      connection.query(attCheckQuery, [user_id,today], (err, att_data) => {
-        if(err){
-          res.status(500).send({
-            status : false,
-            message : "500 error"
-          });
-          connection.release();
-          callback("make new study fail : " + err);
-        } else{
-          callback(null,att_data,verify_data,connection);
-        }
-      });
-    },
-
-    (att_data, verify_data, connection, callback) => {
-
-        // plan_id 구해오기
-        let planQuery =
-        `
-        SELECT *
-        FROM plan
-        WHERE plan_end = ?
-        `;
-
-        connection.query(planQuery, [null,user_id,study_id], (err, studyID_data) => {
-          if(err){
-            res.status(500).send({
-              status : false,
-              message : "500 error"
-            });
-            connection.release();
-            callback("500 : " + err);
-          } else{
-            callback(null,data,verify_data,studyID_data,connection);
-          }
-        });
-
-
-    },
-
-    // 가져온 스터디 아이디로 현재 insert 하는 유저의 스터디 아이디를 업데이트
-    (data, verify_data, studyID_data, connection, callback) => {
-      let updateUserQuery =
-      `
-      UPDATE user
-      SET user_study_id = ?
-      WHERE user_id = ?
-      `;
-      connection.query(updateUserQuery, [studyID_data[0].study_id, verify_data.user_id], (err, data) => {
+      // 오늘 출석체크를 했는지 체크 => check_flag
+      connection.query(attCheckQuery, [user_id, study_id, today], (err, check_data) => {
         if(err){
           res.status(500).send({
             status : false,
@@ -107,14 +83,118 @@ router.post('/:study_id',(req, res)=>{
           connection.release();
           callback("500 : " + err);
         } else{
+          callback(null,check_data,verify_data,connection);
+        }
+      });
+    },
+
+    (check_data, verify_data, connection, callback) => {
+
+        // 오늘 출석체크 하지 않은 경우
+        if(check_data.length == 0){
+          check_flag = false;
+          // att테이블에 insert
+          let attInsertQuery =
+          `
+          INSERT INTO attendance values(?,?,?,?,?,?);
+          `;
+
+          connection.query(attInsertQuery, [null,user_id,study_id,plan_data[0].plan_id,date,time], (err, insert_data) => {
+            if(err){
+              res.status(500).send({
+                status : false,
+                message : "500 error"
+              });
+              connection.release();
+              callback("insert user into attendance fail : " + err);
+            } else{
+
+              // user_att_cnt 증가
+              let updateUserQuery =
+              `
+              UPDATE user
+              SET user_att_cnt = user_att_cnt + 1
+              WHERE user_id = ?
+              `;
+              connection.query(updateUserQuery, [user_id], (err, update_data) => {
+                if(err){
+                  res.status(500).send({
+                    status : false,
+                    message : "500 error"
+                  });
+                  connection.release();
+                  callback("update user att count fail : " + err);
+                } else{
+                  callback(null,connection);
+                }
+              });
+            }
+          });
+        }
+        // 이미 출석 체크 한 경우
+        else{
+          check_flag = true;
+          callback(null,connection);
+        }
+    },
+
+    // 오늘 출석 한 사람 정보 가져오기
+    (connection, callback) => {
+      let selectUserQuery =
+      `
+      SELECT user.user_name, attendance.att_check_date, attendance.att_check_time
+      FROM user, attendance
+      WHERE user.user_id = attendance.att_user_id and attendance.att_user_id = ? and attendance.att_check_date = ?
+      `;
+      connection.query(updateUserQuery, [user_id,today], (err, select_data) => {
+        if(err){
+          res.status(500).send({
+            status : false,
+            message : "500 error"
+          });
+          connection.release();
+          callback("500 : " + err);
+        } else{
+          // // 오늘 출석 체크 한 사람이 없는 경우 => attend_users 빈 배열
+          // if(select_data.length == 0){
+          //   var result_info = {};
+          //   result_info.check_flag = check_flag;
+          //   result_info.attend_users = [];
+          //   res.status(200).send({
+          //     status : true,
+          //     message : "successful attendance check",
+          //     result: result_info
+          //   });
+          //   connection.release();
+          // }
+          // 오늘 출석 체크 한 사람이 있는 경우
+          // else{
+          //
+          // }
+          var result_info = {};
+          var result_attend_users = [];
+
+          for(let r=0; r<select_data.length; r++){
+            var users_info = {};
+            users_info.user_name = select_data[r].user_name;
+            users_info.attend_date = select_data[r].att_check_date;
+            users_info.attend_time = select_data[r].att_check_time;
+            result_attend_users.push(users_info);
+          }
+
+          result_info.check_flag = check_flag;
+          result_info.attend_users = result_attend_users;
+
           res.status(200).send({
             status : true,
-            message : "successful make study",
+            message : "successful attendance check",
+            result : result_info
           });
           connection.release();
         }
       });
     }
+
   ];
   async.waterfall(taskArray , (err, result)=> {
 		if(err) console.log(err);

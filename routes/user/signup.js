@@ -60,7 +60,7 @@ router.post('/',(req, res)=>{
           }
         });
       }else{ // 이미 회원가입 된 회원일 시 => 로그인 해야함
-          res.status(201).send({
+          res.status(200).send({
             status : false,
             message : "there is a existing user"
           });
@@ -96,7 +96,7 @@ router.post('/',(req, res)=>{
 
             token = jwt.sign(data3[0].user_id, data3[0].user_name, data3[0].user_email, data3[0].user_phone);
             userInfo.user_token = token;
-            res.status(201).send({
+            res.status(200).send({
               status : true,
               message : "successful sign up",
               result : userInfo
