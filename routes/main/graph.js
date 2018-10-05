@@ -157,8 +157,6 @@ router.get('/:study_id',(req, res)=>{
               result_info.study_id = study_data[0].study_id;
               result_info.study_day = study_day;
               result_info.study_day_goal = study_day_goal;
-
-              console.log(period);
               result_info.study_percent = (Math.floor(period/study_day)) * 10;
               result_info.study_count = study_data[0].study_count;
               result_info.study_users = user_infos;
