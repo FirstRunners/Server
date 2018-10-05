@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.use('/check', require('../main/check'));
 router.use('/graph', require('../main/graph'));
+router.use('/detail', require('../main/detail'));
 
 module.exports = router;
