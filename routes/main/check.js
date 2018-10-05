@@ -11,8 +11,10 @@ router.post('/:study_id',(req, res)=>{
   var time = req.body.att_check_time;
   var user_id;
   var study_id = req.params.study_id;
-  var date = new Date();
-  var today = date.toISOString().split('T')[0];
+
+  var tmp_date = new Date();
+  var today = tmp_date.toISOString().split('T')[0];
+
   var check_flag; // 이미 출석체크를 했으면 true
 
   let taskArray = [
@@ -41,29 +43,6 @@ router.post('/:study_id',(req, res)=>{
         }
       });
     },
-    // (verify_data, connection, callback) => {
-    //
-    //   let planIDQuery =
-    //   `
-    //   SELECT plan.plan_id
-    //   FROM plan, study
-    //   WHERE plan.plan_study_id = study.study_id and study.study_id = ? and plan.plan_date = ?
-    //   `;
-    //
-    //   // 오늘 날짜에 맞는 plan의 id 가져오기
-    //   connection.query(planIDQuery, [study_id,today], (err, plan_data) => {
-    //     if(err){
-    //       res.status(500).send({
-    //         status : false,
-    //         message : "500 error"
-    //       });
-    //       connection.release();
-    //       callback("make new study fail : " + err);
-    //     } else{
-    //       callback(null,plan_data,verify_data,connection);
-    //     }
-    //   });
-    // },
 
     (verify_data, connection, callback) => {
       let attCheckQuery =
@@ -96,10 +75,10 @@ router.post('/:study_id',(req, res)=>{
           // att테이블에 insert
           let attInsertQuery =
           `
-          INSERT INTO attendance values(?,?,?,?,?,?);
+          INSERT INTO attendance values(?,?,?,?,?);
           `;
 
-          connection.query(attInsertQuery, [null,user_id,study_id,plan_data[0].plan_id,date,time], (err, insert_data) => {
+          connection.query(attInsertQuery, [null,user_id,study_id,date,time], (err, insert_data) => {
             if(err){
               res.status(500).send({
                 status : false,
@@ -108,7 +87,6 @@ router.post('/:study_id',(req, res)=>{
               connection.release();
               callback("insert user into attendance fail : " + err);
             } else{
-
               // user_att_cnt 증가
               let updateUserQuery =
               `
@@ -146,7 +124,7 @@ router.post('/:study_id',(req, res)=>{
       FROM user, attendance
       WHERE user.user_id = attendance.att_user_id and attendance.att_user_id = ? and attendance.att_check_date = ?
       `;
-      connection.query(updateUserQuery, [user_id,today], (err, select_data) => {
+      connection.query(selectUserQuery, [user_id,today], (err, select_data) => {
         if(err){
           res.status(500).send({
             status : false,
@@ -155,22 +133,6 @@ router.post('/:study_id',(req, res)=>{
           connection.release();
           callback("500 : " + err);
         } else{
-          // // 오늘 출석 체크 한 사람이 없는 경우 => attend_users 빈 배열
-          // if(select_data.length == 0){
-          //   var result_info = {};
-          //   result_info.check_flag = check_flag;
-          //   result_info.attend_users = [];
-          //   res.status(200).send({
-          //     status : true,
-          //     message : "successful attendance check",
-          //     result: result_info
-          //   });
-          //   connection.release();
-          // }
-          // 오늘 출석 체크 한 사람이 있는 경우
-          // else{
-          //
-          // }
           var result_info = {};
           var result_attend_users = [];
 
