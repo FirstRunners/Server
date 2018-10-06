@@ -29,14 +29,12 @@ router.post('/',(req, res)=>{
   console.log("횟수:" , count);
 
   var tmp_start = start.split('.');
-  var tmp_startDate = '20' + tmp_start[0] + tmp_start[1] + tmp_start[2];
-  var tmp_startDate2 = moment(tmp_startDate).format("YYYY-MM-DD");
-  var startDate = new Date(tmp_startDate2);
+  var tmp_startDate = '20' + tmp_start[0] + '-' + tmp_start[1] + '-' + tmp_start[2];
+  var startDate = new Date(tmp_startDate);
 
   var tmp_end = end.split('.');
-  var tmp_endDate = '20' + tmp_end[0] + tmp_end[1] + tmp_end[2];
-  var tmp_endDate2 = moment(tmp_endDate).format("YYYY-MM-DD");
-  var endDate = new Date(tmp_endDate2);
+  var tmp_endDate = '20' + tmp_end[0] + '-' + tmp_end[1] + '-' + tmp_end[2];
+  var endDate = new Date(tmp_endDate);
 
 
   var period = (endDate.getTime() - startDate.getTime()) / (1000*60*60*24);
@@ -81,7 +79,7 @@ router.post('/',(req, res)=>{
       `;
 
       // 스터디 insert
-      connection.query(newStudyQuery, [null,name,goal,inwon,tmp_startDate2,tmp_endDate2,period,count,study_users,study_hws], (err, data) => {
+      connection.query(newStudyQuery, [null,name,goal,inwon,tmp_startDate,tmp_endDate,period,count,study_users,study_hws], (err, data) => {
         if(err){
           res.status(500).send({
             status : false,
@@ -136,16 +134,13 @@ router.post('/',(req, res)=>{
           callback("500 : " + err);
         } else{
           var tmp_id = (studyID_data[0].study_id).toString();
-          console.log(tmp_id);
-          console.log(typeof(tmp_id));
-
           var real_id = parseInt(tmp_id);
+
           console.log(real_id);
           console.log(typeof(real_id));
 
           var info = {};
           info.study_id = real_id;
-
 
           res.status(200).send({
             status : true,
