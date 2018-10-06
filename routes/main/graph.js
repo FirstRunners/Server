@@ -5,9 +5,9 @@ const pool = require('../../config/dbPool.js');
 const jwt = require('../../module/jwt.js');
 
 // 그래프 메인 화면
-router.get('/:study_id',(req, res)=>{
+router.get('/',(req, res)=>{
 
-  var study_id = req.params.study_id;
+  var study_id;
   var user_id;
   var study_users;
   var new_users = []; // study_user 배열 업데이트 시에 넣어줄 배열
@@ -49,6 +49,29 @@ router.get('/:study_id',(req, res)=>{
     },
 
     (verify_data, connection, callback) => {
+      // 스터디 아이디 가져오기
+      let getStudyIDQuery =
+      `
+      SELECT user_study_id
+      FROM user
+      WHERE user_id = ?
+      `
+      connection.query(getStudyIDQuery, user_id, (err, study_ID_data) => {
+        if(err){
+          res.status(500).send({
+            status : false,
+            message : "500 error"
+          });
+          connection.release();
+          callback("500 : " + err);
+        } else{
+          study_id = study_ID_data[0].user_study_id;
+          callback(null,study_ID_data,verify_data,connection);
+        }
+      });
+    },
+
+    (study_ID_data, verify_data, connection, callback) => {
 
       // 스터디 정보 가져오기
       let getStudyInfoQuery =
