@@ -3,6 +3,7 @@ const router = express.Router();
 const async = require('async');
 const pool = require('../../config/dbPool.js');
 const jwt = require('../../module/jwt.js');
+const moment = require
 
 // 그래프 메인 화면
 router.get('/',(req, res)=>{
@@ -73,34 +74,46 @@ router.get('/',(req, res)=>{
 
     (study_ID_data, verify_data, connection, callback) => {
 
-      // 스터디 정보 가져오기
-      let getStudyInfoQuery =
-      `
-      SELECT *
-      FROM study
-      WHERE study_id = ?
-      `
-      connection.query(getStudyInfoQuery, study_id, (err, study_data) => {
-        if(err){
-          res.status(500).send({
-            status : false,
-            message : "500 error"
-          });
-          connection.release();
-          callback("500 : " + err);
-        } else{
-          study_users = JSON.parse(study_data[0].study_users);
-          period = study_data[0].study_period;
 
-          var tmp_start = new Date(study_data[0].study_start);
-          var tmp_end = new Date(study_data[0].study_end);
+      if(study_id == null){
+        res.status(200).send({
+          status : true,
+          message : "there is no study",
+          result : null
+        });
+        connection.release();
+      }
+      else{
+        // 스터디 정보 가져오기
+        let getStudyInfoQuery =
+        `
+        SELECT *
+        FROM study
+        WHERE study_id = ?
+        `
+        connection.query(getStudyInfoQuery, study_id, (err, study_data) => {
+          if(err){
+            res.status(500).send({
+              status : false,
+              message : "500 error"
+            });
+            connection.release();
+            callback("500 : " + err);
+          } else{
+            study_users = JSON.parse(study_data[0].study_users);
+            period = study_data[0].study_period;
 
-          study_day = (today.getTime() - tmp_start.getTime()) / (1000*60*60*24);
-          study_day_goal = (tmp_end.getTime() - today.getTime()) / (1000*60*60*24);
+            var tmp_start = new Date(study_data[0].study_start);
+            var tmp_end = new Date(study_data[0].study_end);
 
-          callback(null,study_data,verify_data,connection);
-        }
-      });
+            study_day = (today.getTime() - tmp_start.getTime()) / (1000*60*60*24);
+            study_day_goal = (tmp_end.getTime() - today.getTime()) / (1000*60*60*24);
+
+            callback(null,study_data,verify_data,connection);
+          }
+        });
+      }
+
     },
 
     (study_data, verify_data, connection, callback) => {
@@ -185,6 +198,8 @@ router.get('/',(req, res)=>{
               result_info.study_users = user_infos;
               result_info.user_me = user_me;
               result_info.user_img = user_img;
+
+              console.log(result_info);
 
               res.status(200).send({
                 status : true,
