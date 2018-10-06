@@ -10,7 +10,6 @@ router.get('/',(req, res)=>{
 
   var study_id;
   var user_id;
-  var user_in_flag;
   var study_users;
   var new_users = []; // study_user 배열 업데이트 시에 넣어줄 배열
   var user_infos = []; // 클라에게 보내 줄 유저 객체 배열
@@ -20,10 +19,8 @@ router.get('/',(req, res)=>{
   var study_day; // 오늘 - 스터디 시작 날
   var study_day_goal; // 스터디 끝나는 날 - 오늘
   var tmp_date = new Date();
-  tmp_date.setHours(tmp_date.getHours()+9);
   var tmp_today = tmp_date.toISOString().split('T')[0];
   var today = new Date(tmp_today);
-  console.log(today);
 
   let taskArray = [
     (callback) => {
@@ -77,7 +74,7 @@ router.get('/',(req, res)=>{
 
     (study_ID_data, verify_data, connection, callback) => {
 
-      // 초대장도 받지 않은 경우
+
       if(study_id == null){
         res.status(200).send({
           status : true,
@@ -86,8 +83,6 @@ router.get('/',(req, res)=>{
         });
         connection.release();
       }
-
-      // 초대장은 받은 경우
       else{
         // 스터디 정보 가져오기
         let getStudyInfoQuery =
@@ -108,38 +103,16 @@ router.get('/',(req, res)=>{
 
             // study user id 배열 만들기
             study_users = JSON.parse(study_data[0].study_users);
+            period = study_data[0].study_period;
 
-            // user가 초대장만 받고 수락하지 않은 상태인지 체크
-            for(let u=0; u<study_users.length; u++){
-              if(user_id == study_users[u]) user_in_flag = true;
-              else{
-                if(u == study_users.length -1) user_in_flag = false;
-                else continue;
-              }
-            }
-            // 초대장 수락하지 않은 상태일 때
-            if(user_in_flag == false){
-              res.status(200).send({
-                status : true,
-                message : "there is no study",
-                result : null
-              });
-              connection.release();
-            }
-            // 초대장 수락한 상태일 때
-            else{
-              period = study_data[0].study_period;
+            var tmp_start = new Date(study_data[0].study_start);
+            var tmp_end = new Date(study_data[0].study_end);
 
-              var tmp_start = new Date(study_data[0].study_start);
-              var tmp_end = new Date(study_data[0].study_end);
+            // study_day, study_day_goal 계산
+            study_day = (today.getTime() - tmp_start.getTime()) / (1000*60*60*24);
+            study_day_goal = (tmp_end.getTime() - today.getTime()) / (1000*60*60*24);
 
-              // study_day, study_day_goal 계산
-              study_day = (today.getTime() - tmp_start.getTime()) / (1000*60*60*24);
-              study_day_goal = (tmp_end.getTime() - today.getTime()) / (1000*60*60*24);
-
-              callback(null,study_data,verify_data,connection);
-            }
-
+            callback(null,study_data,verify_data,connection);
           }
         });
       }
@@ -249,9 +222,9 @@ router.get('/',(req, res)=>{
 
   ];
   async.waterfall(taskArray , (err, result)=> {
-		if(err) console.log(err);
-		else console.log(result);
-	});
+      if(err) console.log(err);
+      else console.log(result);
+   });
 });
 
 module.exports = router;

@@ -14,6 +14,11 @@ router.post('/:study_id',(req, res)=>{
   var date = req.body.plan_date;
   var memo = req.body.plan_memo;
 
+  var tmp_date = date.split('.');
+  var real_date = '20' + tmp_date[0] + '-' + tmp_date[1] + '-' + tmp_date[2];
+
+  console.log(real_date);
+
   let taskArray = [
     (callback) => {
       pool.getConnection((err, connection) => {
@@ -36,7 +41,7 @@ router.post('/:study_id',(req, res)=>{
       `;
 
       // plan insert
-      connection.query(newPlanQuery, [null,id,name,date,time,place,memo], (err, data) => {
+      connection.query(newPlanQuery, [null,id,name,real_date,time,place,memo], (err, data) => {
         if(err){
           res.status(500).send({
             status : false,
