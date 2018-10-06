@@ -5,7 +5,7 @@ const pool = require('../../config/dbPool.js');
 const jwt = require('../../module/jwt.js');
 const moment = require
 
-// 진행 중 일정 조회
+// 지난 일정 조회
 router.get('/',(req, res)=>{
 
   var study_id;
@@ -145,10 +145,10 @@ router.get('/',(req, res)=>{
           connection.release();
           callback("500 : " + err);
         } else{
-          // 진행 중 일정인 것들만 new_plan에 저장 & plan_id , plan_date 저장
+          // 지난 일정인 것들만 new_plan에 저장 & plan_id , plan_date 저장
           for(let p=0; p<plan_data.length; p++){
             var tmp_plan_date = new Date(plan_data[p].plan_date);
-            if(tmp_plan_date.getTime() > today.getTime()){
+            if(tmp_plan_date.getTime() < today.getTime()){
               new_plan.push(plan_data[p]);
               plan_id.push(plan_data[p].plan_id);
               plan_date.push(plan_data[p].plan_date);
