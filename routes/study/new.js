@@ -3,6 +3,7 @@ const router = express.Router();
 const async = require('async');
 const pool = require('../../config/dbPool.js');
 const jwt = require('../../module/jwt.js');
+const moment = require('moment');
 
 // 스터디 생성
 router.post('/',(req, res)=>{
@@ -18,8 +19,25 @@ router.post('/',(req, res)=>{
   var end = req.body.study_end;
   var count = req.body.study_count;
 
-  var startDate = new Date(start);
-  var endDate = new Date(end);
+  console.log(req.body);
+
+  console.log("이름: " , name);
+  console.log("목표: " , goal);
+  console.log("인원: " , inwon);
+  console.log("시작날짜: " , start);
+  console.log("완료날짜: " , end);
+  console.log("횟수:" , count);
+
+  var tmp_start = start.split('.');
+  var tmp_startDate = '20' + tmp_start[0] + tmp_start[1] + tmp_start[2];
+  var tmp_startDate2 = moment(tmp_startDate).format("YYYY-MM-DD");
+  var startDate = new Date(tmp_startDate2);
+
+  var tmp_end = end.split('.');
+  var tmp_endDate = '20' + tmp_end[0] + tmp_end[1] + tmp_end[2];
+  var tmp_endDate2 = moment(tmp_endDate).format("YYYY-MM-DD");
+  var endDate = new Date(tmp_endDate2);
+
 
   var period = (endDate.getTime() - startDate.getTime()) / (1000*60*60*24);
 
@@ -54,13 +72,16 @@ router.post('/',(req, res)=>{
       study_users = JSON.stringify(temp_users);
       study_hws = JSON.stringify(temp_hws);
 
+      console.log(study_users);
+      console.log(study_hws);
+
       let newStudyQuery =
       `
       INSERT INTO study values(?,?,?,?,?,?,?,?,?,?)
       `;
 
       // 스터디 insert
-      connection.query(newStudyQuery, [null,name,goal,inwon,start,end,period,count,study_users,study_hws], (err, data) => {
+      connection.query(newStudyQuery, [null,name,goal,inwon,tmp_startDate2,tmp_endDate2,period,count,study_users,study_hws], (err, data) => {
         if(err){
           res.status(500).send({
             status : false,
@@ -114,9 +135,22 @@ router.post('/',(req, res)=>{
           connection.release();
           callback("500 : " + err);
         } else{
+          var tmp_id = (studyID_data[0].study_id).toString();
+          console.log(tmp_id);
+          console.log(typeof(tmp_id));
+
+          var real_id = parseInt(tmp_id);
+          console.log(real_id);
+          console.log(typeof(real_id));
+
+          var info = {};
+          info.study_id = real_id;
+
+
           res.status(200).send({
             status : true,
             message : "successful make study",
+            result : info
           });
           connection.release();
         }
