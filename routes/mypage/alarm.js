@@ -21,7 +21,6 @@ router.put('/',(req, res)=>{
             message: "invalid authentication"
           });
       }else{
-        console.log(req.body.user_plan_alarm);
         user_id = verify_data.user_id;
         if(req.body.user_plan_alarm == 0){
           message = "successful alarm off";
