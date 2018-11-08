@@ -5,7 +5,7 @@ const pool = require('../../config/dbPool.js');
 const jwt = require('../../module/jwt.js');
 const moment = require
 
-// 계정 삭제
+// 스터디 나가기
 router.delete('/',(req, res)=>{
 
   var user_id;
@@ -59,7 +59,7 @@ router.delete('/',(req, res)=>{
           if(user_all_data[0].user_study_id == null){
             res.status(200).send({
               status : true,
-              message : "successful delete user"
+              message : "there is no study"
             });
             connection.release();
           }
@@ -120,13 +120,13 @@ router.delete('/',(req, res)=>{
     },
 
     (data, connection, callback) => {
-      let deleteUser =
+      let deleteStudy =
       `
-      DELETE
-      FROM user
+      UPDATE user
+      SET user_study_id = null
       WHERE user_id = ?
       `
-      connection.query(deleteUser, user_id, (err, user_data) => {
+      connection.query(deleteStudy, user_id, (err, user_data) => {
         if(err){
           res.status(500).send({
             status : false,
@@ -137,9 +137,10 @@ router.delete('/',(req, res)=>{
         } else{
           res.status(200).send({
             status : true,
-            message : "successful delete user"
+            message : "successful study out"
           });
-          connection.release();        }
+          connection.release();
+        }
       });
     }
 

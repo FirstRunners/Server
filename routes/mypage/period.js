@@ -58,6 +58,7 @@ router.post('/',(req, res)=>{
           connection.release();
           callback("500 : " + err);
         } else{
+          // 등록된 스터디가 없다면
           if(user_data[0].user_study_id == null){
             res.status(200).send({
               status : true,
