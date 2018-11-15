@@ -17,9 +17,6 @@ router.post('/:study_id',(req, res)=>{
   var mm = tmp_date.getMinutes().toString();
   var time = hh + ":" + (mm[1] ? mm : '0'+mm[0]);
 
-  console.log(tmp_date);
-  console.log(time);
-
   var check_flag; // 이미 출석체크를 했으면 true
 
   let taskArray = [
@@ -116,8 +113,24 @@ router.post('/:study_id',(req, res)=>{
         }
         // 이미 출석 체크 한 경우
         else{
-          check_flag = true;
-          callback(null,connection);
+          let deleteQuery =
+          `
+          DELETE FROM attendance
+          WHERE att_study_id = ? and att_user_id = ?
+          `
+          connection.query(deleteQuery, [study_id,user_id], (err, delete_data) => {
+            if(err){
+              res.status(500).send({
+                status : false,
+                message : "500 error"
+              });
+              connection.release();
+              callback("500 : " + err);
+            } else{
+              check_flag = true;
+              callback(null,connection);
+            }
+          });
         }
     },
 
