@@ -7,13 +7,18 @@ const jwt = require('../../module/jwt.js');
 // 출석 체크
 router.post('/:study_id',(req, res)=>{
 
-  var date = req.body.att_check_date;
-  var time = req.body.att_check_time;
   var user_id;
   var study_id = req.params.study_id;
 
   var tmp_date = new Date();
   var today = tmp_date.toISOString().split('T')[0];
+
+  var hh = tmp_date.getHours().toString();
+  var mm = tmp_date.getMinutes().toString();
+  var time = hh + ":" + (mm[1] ? mm : '0'+mm[0]);
+
+  console.log(tmp_date);
+  console.log(time);
 
   var check_flag; // 이미 출석체크를 했으면 true
 
@@ -78,7 +83,7 @@ router.post('/:study_id',(req, res)=>{
           INSERT INTO attendance values(?,?,?,?,?);
           `;
 
-          connection.query(attInsertQuery, [null,user_id,study_id,date,time], (err, insert_data) => {
+          connection.query(attInsertQuery, [null,user_id,study_id,today,time], (err, insert_data) => {
             if(err){
               res.status(500).send({
                 status : false,
