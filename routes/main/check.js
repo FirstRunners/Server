@@ -69,7 +69,50 @@ router.post('/:study_id',(req, res)=>{
       });
     },
 
+
     (check_data, verify_data, connection, callback) => {
+      // 스터디의 총 모임 횟수 가져오기
+      let studyCountQuery =
+      `
+      SELECT *
+      FROM study
+      WHERE study_id = ?
+      `
+      connection.query(studyCountQuery, study_id, (err, studyCountData) => {
+        if(err){
+          res.status(500).send({
+            status : false,
+            message : "500 error"
+          });
+          connection.release();
+          callback("500 : " + err);
+        } else{
+          let userAttCountQuery =
+          `
+          SELECT *
+          FROM user
+          WHERE user_id = ?
+          `
+          connection.query(userAttCountQuery, user_id, (err, userAttCountData) => {
+            if(err){
+              res.status(500).send({
+                status : false,
+                message : "500 error"
+              });
+              connection.release();
+              callback("500 : " + err);
+            } else{
+              callback(null,userAttCountData,studyCountData,check_data,connection);
+            }
+          });
+        }
+      });
+
+    },
+
+
+
+    (userAttCountData, studyCountData, check_data, connection, callback) => {
 
         // 오늘 출석체크 하지 않은 경우
         if(check_data.length == 0){
@@ -89,25 +132,31 @@ router.post('/:study_id',(req, res)=>{
               connection.release();
               callback("insert user into attendance fail : " + err);
             } else{
-              // user_att_cnt 증가
-              let updateUserQuery =
-              `
-              UPDATE user
-              SET user_att_cnt = user_att_cnt + 1
-              WHERE user_id = ?
-              `;
-              connection.query(updateUserQuery, [user_id], (err, update_data) => {
-                if(err){
-                  res.status(500).send({
-                    status : false,
-                    message : "500 error"
-                  });
-                  connection.release();
-                  callback("update user att count fail : " + err);
-                } else{
-                  callback(null,connection);
-                }
-              });
+              if(userAttCountData[0].user_att_cnt >= studyCountData[0].study_count){
+                callback(null,connection);
+              }
+              else{
+                // user_att_cnt 증가
+                let updateUserQuery =
+                `
+                UPDATE user
+                SET user_att_cnt = user_att_cnt + 1
+                WHERE user_id = ?
+                `;
+                connection.query(updateUserQuery, [user_id], (err, update_data) => {
+                  if(err){
+                    res.status(500).send({
+                      status : false,
+                      message : "500 error"
+                    });
+                    connection.release();
+                    callback("update user att count fail : " + err);
+                  } else{
+                    callback(null,connection);
+                  }
+                });
+              }
+
             }
           });
         }
@@ -127,8 +176,32 @@ router.post('/:study_id',(req, res)=>{
               connection.release();
               callback("500 : " + err);
             } else{
-              check_flag = true;
-              callback(null,connection);
+
+              if(userAttCountData[0].user_att_cnt == 0){
+                check_flag = true;
+                callback(null,connection);
+              }
+              else{
+                // 출석횟수 감소
+                let deAttCountQuery =
+                `
+                UPDATE user
+                SET user_att_cnt = user_att_cnt - 1
+                WHERE user_id = ?
+                `
+                connection.query(deAttCountQuery, user_id, (err, decrease_data) => {
+                  if(err){
+                    res.status(500).send({
+                      status : false,
+                      message : "500 error"
+                    });
+                    connection.release();
+                    callback("500 : " + err);
+                  } else{
+                    callback(null,connection);
+                  }
+                });
+              }
             }
           });
         }

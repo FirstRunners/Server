@@ -23,7 +23,6 @@ router.get('/',(req, res)=>{
   tmp_date.setHours(tmp_date.getHours()+9);
   var tmp_today = tmp_date.toISOString().split('T')[0];
   var today = new Date(tmp_today);
-  console.log(today);
 
   let taskArray = [
     (callback) => {
@@ -70,6 +69,7 @@ router.get('/',(req, res)=>{
           callback("500 : " + err);
         } else{
           study_id = study_ID_data[0].user_study_id;
+
           callback(null,study_ID_data,verify_data,connection);
         }
       });
@@ -111,12 +111,16 @@ router.get('/',(req, res)=>{
 
             // user가 초대장만 받고 수락하지 않은 상태인지 체크
             for(let u=0; u<study_users.length; u++){
-              if(user_id == study_users[u]) user_in_flag = true;
+              if(user_id == study_users[u]){
+                user_in_flag = true;
+                break;
+              }
               else{
                 if(u == study_users.length -1) user_in_flag = false;
                 else continue;
               }
             }
+
             // 초대장 수락하지 않은 상태일 때
             if(user_in_flag == false){
               res.status(200).send({
@@ -232,8 +236,6 @@ router.get('/',(req, res)=>{
               result_info.study_users = user_infos;
               result_info.user_me = user_me;
               result_info.user_img = user_img;
-
-              console.log(result_info);
 
               res.status(200).send({
                 status : true,
