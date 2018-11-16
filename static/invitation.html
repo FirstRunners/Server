@@ -5,32 +5,22 @@
 <script>
 var userAgent = navigator.userAgent;
 var visitedAt = (new Date()).getTime();
-if (userAgent.match(/android/)) {
+if (userAgent.match(/Android/)) {
 
     if (userAgent.match(/Chrome/)) {
 
          // 안드로이드의 크롬에서는 intent만 동작하기 때문에 intent로 호출해야함
-
          setTimeout(function() {
-
-              location.href = "intent://invitation#Intent; scheme=learners;package=com.android.firstlearners.learners; end;";
-
+              location.href = "intent://invitation/#Intent;scheme=learners;package=com.android.firstlearners.learners;end";
          }, 1000);
 
     } else {
-
         // 크롬 이외의 브라우저들
-
         setTimeout(
-
            function() {
-
               if ((new Date()).getTime() - visitedAt < 2000) {
-
                  location.href = "{마켓 주소}";
-
               }
-
           }, 500);
 
 
@@ -50,6 +40,5 @@ if (userAgent.match(/android/)) {
 }
 </script>
 <body>
-
 </body>
 </html>
