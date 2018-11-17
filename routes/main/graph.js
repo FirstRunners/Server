@@ -138,8 +138,11 @@ router.get('/',(req, res)=>{
               var tmp_end = new Date(study_data[0].study_end);
 
               // study_day, study_day_goal 계산
-              study_day = (today.getTime() - tmp_start.getTime()) / (1000*60*60*24);
-              study_day_goal = (tmp_end.getTime() - today.getTime()) / (1000*60*60*24);
+              if(((today.getTime() - tmp_start.getTime()) / (1000*60*60*24)) >= period) study_day = period;
+              else study_day = (today.getTime() - tmp_start.getTime()) / (1000*60*60*24);
+
+              if(tmp_end.getTime() <= today.getTime()) study_day_goal = 0;
+              else  study_day_goal = (tmp_end.getTime() - today.getTime()) / (1000*60*60*24);
 
               callback(null,study_data,verify_data,connection);
             }
@@ -230,7 +233,8 @@ router.get('/',(req, res)=>{
               result_info.study_goal = study_data[0].study_goal;
 
               if(study_day == 0) result_info.study_percent = 0;
-              else result_info.study_percent = (Math.floor(period/study_day)) * 10;
+              else result_info.study_percent = (Math.floor((study_day/period)*100));
+
 
               result_info.study_count = study_data[0].study_count;
               result_info.study_users = user_infos;

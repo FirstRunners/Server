@@ -11,6 +11,7 @@ router.post('/:study_id',(req, res)=>{
   var study_id = req.params.study_id;
 
   var tmp_date = new Date();
+  tmp_date.setHours(tmp_date.getHours()+9);
   var today = tmp_date.toISOString().split('T')[0];
 
   var hh = tmp_date.getHours().toString();
@@ -182,6 +183,7 @@ router.post('/:study_id',(req, res)=>{
                 callback(null,connection);
               }
               else{
+                check_flag = true;
                 // 출석횟수 감소
                 let deAttCountQuery =
                 `
@@ -234,7 +236,6 @@ router.post('/:study_id',(req, res)=>{
             users_info.attend_time = select_data[r].att_check_time;
             result_attend_users.push(users_info);
           }
-
           result_info.check_flag = check_flag;
           result_info.attend_users = result_attend_users;
 
