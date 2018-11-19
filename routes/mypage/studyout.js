@@ -135,11 +135,29 @@ router.delete('/',(req, res)=>{
           connection.release();
           callback("500 : " + err);
         } else{
-          res.status(200).send({
-            status : true,
-            message : "successful study out"
+
+          let deleteStudy2 =
+          `
+          DELETE FROM study
+          WHERE study_id = ?
+          `
+
+          connection.query(deleteStudy2, study_id, (err, study_delete_data) => {
+            if(err){
+              res.status(500).send({
+                status : false,
+                message : "500 error"
+              });
+              connection.release();
+              callback("500 : " + err);
+            } else{
+              res.status(200).send({
+                status : true,
+                message : "successful study out"
+              });
+              connection.release();
+            }
           });
-          connection.release();
         }
       });
     }
