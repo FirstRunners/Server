@@ -57,20 +57,35 @@ router.delete('/',(req, res)=>{
         } else{
           // 등록된 스터디가 없다면
           if(user_all_data[0].user_study_id == null){
-            res.status(200).send({
-              status : true,
-              message : "successful delete user"
+            // 유저 테이블에서만 삭제
+            let deleteUser =
+            `
+            DELETE
+            FROM user
+            WHERE user_id = ?
+            `
+            connection.query(deleteUser, user_id, (err, user_data) => {
+              if(err){
+                res.status(500).send({
+                  status : false,
+                  message : "500 error"
+                });
+                connection.release();
+                callback("500 : " + err);
+              } else{
+                res.status(200).send({
+                  status : true,
+                  message : "successful delete user"
+                });
+                connection.release();
+              }
             });
-            connection.release();
-          }
-          else{
-            study_id = user_all_data[0].user_study_id;
-            callback(null,user_all_data,connection);
-          }
         }
+      }
       });
     },
 
+    // 등록된 스터디 아이디 가져오기
     (user_all_data, connection, callback) => {
       let getStudy =
       `
@@ -98,6 +113,7 @@ router.delete('/',(req, res)=>{
       });
     },
 
+    // 스터디 테이블 유저 배열에서 삭제
     (study_data, connection, callback) => {
       let updateStudy =
       `
@@ -139,7 +155,8 @@ router.delete('/',(req, res)=>{
             status : true,
             message : "successful delete user"
           });
-          connection.release();        }
+          connection.release();
+        }
       });
     }
 
