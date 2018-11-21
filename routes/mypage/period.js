@@ -11,8 +11,19 @@ router.post('/',(req, res)=>{
   var user_id;
   var study_id;
 
-  var study_start = req.body.study_start;
-  var study_end = req.body.study_end;
+  var start = req.body.study_start;
+  var end = req.body.study_end;
+
+  var tmp_start = start.split('.');
+  var tmp_startDate = '20' + tmp_start[0] + '-' + tmp_start[1] + '-' + tmp_start[2];
+  var startDate = new Date(tmp_startDate);
+
+  var tmp_end = end.split('.');
+  var tmp_endDate = '20' + tmp_end[0] + '-' + tmp_end[1] + '-' + tmp_end[2];
+  var endDate = new Date(tmp_endDate);
+
+  var period = (endDate.getTime() - startDate.getTime()) / (1000*60*60*24);
+
 
   let taskArray = [
     (callback) => {
@@ -77,11 +88,11 @@ router.post('/',(req, res)=>{
       let updateQuery =
       `
       UPDATE study
-      SET study_start = ? , study_end = ?
+      SET study_start = ? , study_end = ? , study_period = ?
       WHERE study_id = ?
       `
 
-      connection.query(updateQuery, [study_start, study_end, user_study_id], (err, data) => {
+      connection.query(updateQuery, [tmp_startDate, tmp_endDate, period, user_study_id], (err, data) => {
         if(err){
           res.status(500).send({
             status : false,
