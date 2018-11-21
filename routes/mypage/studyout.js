@@ -61,6 +61,7 @@ router.delete('/',(req, res)=>{
               status : true,
               message : "there is no study"
             });
+            console.log("등록된 스터디가 없음");
             connection.release();
           }
           else{
@@ -135,14 +136,13 @@ router.delete('/',(req, res)=>{
           connection.release();
           callback("500 : " + err);
         } else{
-
-          let deleteStudy2 =
+          let selectStudyUserCount =
           `
-          DELETE FROM study
+          SELECT *
+          FROM study
           WHERE study_id = ?
           `
-
-          connection.query(deleteStudy2, study_id, (err, study_delete_data) => {
+          connection.query(selectStudyUserCount, study_id, (err, studyUserCountData) => {
             if(err){
               res.status(500).send({
                 status : false,
@@ -151,11 +151,36 @@ router.delete('/',(req, res)=>{
               connection.release();
               callback("500 : " + err);
             } else{
-              res.status(200).send({
-                status : true,
-                message : "successful study out"
-              });
-              connection.release();
+              if((JSON.parse(studyUserCountData[0].study_users)).length == 0){
+                let deleteStudy2 =
+                `
+                DELETE FROM study
+                WHERE study_id = ?
+                `
+                connection.query(deleteStudy2, study_id, (err, study_delete_data) => {
+                  if(err){
+                    res.status(500).send({
+                      status : false,
+                      message : "500 error"
+                    });
+                    connection.release();
+                    callback("500 : " + err);
+                  } else{
+                    res.status(200).send({
+                      status : true,
+                      message : "successful study out"
+                    });
+                    connection.release();
+                  }
+                });
+              }
+              else{
+                res.status(200).send({
+                  status : true,
+                  message : "successful study out"
+                });
+                connection.release();
+              }
             }
           });
         }
