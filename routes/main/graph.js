@@ -69,7 +69,8 @@ router.get('/',(req, res)=>{
           callback("500 : " + err);
         } else{
           study_id = study_ID_data[0].user_study_id;
-
+          console.log("study_ID_data[0]: ",study_ID_data[0]);
+          console.log("스터디 아이디: ",study_id);
           callback(null,study_ID_data,verify_data,connection);
         }
       });
@@ -206,6 +207,7 @@ router.get('/',(req, res)=>{
             tmp_info.user_name = tmp_users.info[idx].user_name;
             tmp_info.user_att_cnt = tmp_users.info[idx].user_att_cnt;
             tmp_info.user_hw_cnt = tmp_users.info[idx].user_hw_cnt;
+            tmp_info.user_img = tmp_users.info[idx].user_img;
             user_infos.push(tmp_info);
           }
 
