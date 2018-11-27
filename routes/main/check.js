@@ -213,11 +213,11 @@ router.post('/:study_id',(req, res)=>{
     (connection, callback) => {
       let selectUserQuery =
       `
-      SELECT user.user_name, attendance.att_check_date, attendance.att_check_time
+      SELECT user.user_name, attendance.att_check_date, attendance.att_check_time, user.user_img
       FROM user, attendance
-      WHERE user.user_id = attendance.att_user_id and attendance.att_user_id = ? and attendance.att_check_date = ?
+      WHERE user.user_id = attendance.att_user_id and attendance.att_check_date = ?
       `;
-      connection.query(selectUserQuery, [user_id,today], (err, select_data) => {
+      connection.query(selectUserQuery, today, (err, select_data) => {
         if(err){
           res.status(500).send({
             status : false,
@@ -234,6 +234,7 @@ router.post('/:study_id',(req, res)=>{
             users_info.user_name = select_data[r].user_name;
             users_info.attend_date = select_data[r].att_check_date;
             users_info.attend_time = select_data[r].att_check_time;
+            users_info.user_img = select_data[r].user_img;
             result_attend_users.push(users_info);
           }
           result_info.check_flag = check_flag;
